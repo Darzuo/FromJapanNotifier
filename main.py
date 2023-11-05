@@ -1,6 +1,8 @@
-from selenium import webdriver 
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import Chrome 
 from selenium.webdriver.common.by import By 
+from selenium.webdriver.support import expected_conditions as EC
 import webbrowser
 import PIL.Image
 from PIL import ImageTk
@@ -43,7 +45,9 @@ prev_prices = ['','','','',''] # stores the last several prices of items to prev
 def update_item(img_url, price, link):
     page=urllib.request.Request(img_url,headers={'User-Agent': 'Mozilla/5.0'}) 
     raw_data=urllib.request.urlopen(page).read()
-    image = ImageTk.PhotoImage(PIL.Image.open(io.BytesIO(raw_data)).resize((250, 250)))
+    PILImage = PIL.Image.open(io.BytesIO(raw_data))
+    PILImage.thumbnail((250, 250))
+    image = ImageTk.PhotoImage(PILImage)
     image_button.config(text="temp", image=image, command=lambda: webbrowser.open(link))
     image_button.image = image
     price_label.config(text=price)
@@ -53,6 +57,7 @@ def update_item(img_url, price, link):
 def refresh():
     driver.get(url)
     shop_items_xpath = "//div[@class='shop-item flex lg:block lg:w-1/4 mb-6 lg:px-3 justify-center w-full']"
+    elem = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, shop_items_xpath)))
     # shop_items = driver.find_elements(By.XPATH, shop_items_xpath)
     # item = shop_items[0]
     item = driver.find_element(By.XPATH, shop_items_xpath)
