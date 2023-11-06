@@ -18,7 +18,7 @@ def focus_next_widget(event):
 # start the programs setup screen
 def setup():
 
-    def goto_notifier():
+    def goto_notifier(e=None):
         global refresh_freq
         global search_url
         refresh_freq = int(freq_box.get())
@@ -38,6 +38,7 @@ def setup():
     freq_box.insert(0, "3")
     freq_box.pack()
     start_button = Button(root, text="Start!", command=goto_notifier)
+    start_button.bind('<Return>',goto_notifier)
     start_button.pack()
     root.mainloop()
 
