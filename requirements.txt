@@ -1,6 +1,4 @@
 deep_translator==1.11.4
-Pillow==9.2.0
-Pillow==9.3.0
 Pillow==10.1.0
 pygame==2.5.2
 selenium==4.15.2
