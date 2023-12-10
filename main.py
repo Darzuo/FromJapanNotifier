@@ -11,6 +11,7 @@ import urllib
 import io
 from pygame import mixer
 from deep_translator import GoogleTranslator
+from Item import Item
 
 # initialize tkinter window
 def tk_root():
@@ -87,16 +88,16 @@ def start_notifier():
     root.mainloop()
 
 # sets tkinter labels to given image and price. Image is a button that redirects to passed link 
-def update_item(img_url, price, link, desc, price_label, image_button, desc_label):
-    page=urllib.request.Request(img_url,headers={'User-Agent': 'Mozilla/5.0'}) 
+def update_item(item, price_label, image_button, desc_label):
+    page=urllib.request.Request(item.img,headers={'User-Agent': 'Mozilla/5.0'}) 
     raw_data=urllib.request.urlopen(page).read()
     PILImage = PIL.Image.open(io.BytesIO(raw_data))
     PILImage.thumbnail((250, 250))
     image = ImageTk.PhotoImage(PILImage)
-    image_button.config(text="temp", image=image, command=lambda: webbrowser.open(link))
+    image_button.config(text="temp", image=image, command=lambda: webbrowser.open(item.link))
     image_button.image = image
-    price_label.config(text=price)
-    desc_label.config(text=desc)
+    price_label.config(text=item.price)
+    desc_label.config(text=item.desc)
     notif_sound.play()
     
 # reload the page and refresh app frame
@@ -105,28 +106,32 @@ def refresh(price_label, image_button, desc_label):
     shop_items_xpath = "//div[@class='shop-item flex lg:block lg:w-1/4 mb-6 lg:px-3 justify-center w-full']" # xpath for one item
     try:
         elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, shop_items_xpath))) # waits for element to exist, i.e. page to be loaded
-        item = driver.find_element(By.XPATH, shop_items_xpath) # gets first (most recent) item on the page
-        img = item.find_element(By.TAG_NAME, "img").get_attribute('src')
-        price_xpath = "//span[@class='w-full text-black truncate text-xs text-grey mb-2']" # xpath for price label
-        price = item.find_element(By.XPATH, price_xpath).get_attribute('innerHTML')
-        # print(item.get_attribute('outerHTML'))
+        item = driver.find_element(By.XPATH, shop_items_xpath) # get most recent item on the page
         desc_xpath = "//a[@class='inline-block w-full text-black truncate text-sm']"
         desc = item.find_element(By.XPATH, desc_xpath).get_attribute('innerHTML')
         if (translate):
-            desc = GoogleTranslator(source='auto', target='english').translate(desc)
-        if price not in prev_prices: # make sure item was not recently displayed; necessary as FromJapan display order is not consistent
-            prev_prices.append(price)
-            prev_prices.pop(0)
-            item_link_xpath = "//a[@class='h-full flex']" 
-            item_link = item.find_element(By.XPATH, item_link_xpath).get_attribute('href')
-            update_item(img, price, item_link, desc, price_label, image_button, desc_label)
+                desc = GoogleTranslator(source='auto', target='english').translate(desc)
+        if desc not in prev_items: # make sure item was not recently displayed; necessary as FromJapan display order is not consistent
+            print("Found new item: " + desc)
+            img = item.find_element(By.TAG_NAME, "img").get_attribute('src')
+            price_xpath = "//span[@class='w-full text-black truncate text-xs text-grey mb-2']" # xpath for price label
+            price = item.find_element(By.XPATH, price_xpath).get_attribute('innerHTML')
+            
+            prev_items.append(desc)
+            prev_items.pop(0)
+            link_xpath = "//a[@class='h-full flex']" 
+            link = item.find_element(By.XPATH, link_xpath).get_attribute('href')
+            update_item(Item(desc, img, price, link), price_label, image_button, desc_label) 
+        
+        # print(item.get_attribute('outerHTML'))
+        
     except:
         pass
     
     root.after(1000 * refresh_freq, lambda: refresh(price_label, image_button, desc_label)) # rerun refresh page every 3000 ms
 
-prev_prices = ['','','','',''] # stores the last several prices of items to prevent repetition due to FromJapan inconsistency
-
+prev_items = ['','','','',''] # stores the last several prices of items to prevent repetition due to FromJapan inconsistency
+queue = []
 root = tk_root()
 translate = None
 # import notification sound
