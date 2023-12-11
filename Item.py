@@ -4,3 +4,6 @@ class Item:
         self.img = img
         self.price = price
         self.link = link
+    
+    def __str__(self):
+     return self.desc
