@@ -17,7 +17,7 @@ class FromJapanNotifier:
     # initialize tkinter window
     def tk_root(self):
         root = Tk()
-        root.resizable(False, False)
+        root.resizable(True, True)
         root.title("FJN")
         root.iconbitmap(default='OneMap.ico')
         root.geometry('250x325')
@@ -28,6 +28,14 @@ class FromJapanNotifier:
     def focus_next_widget(self, event):
         event.widget.tk_focusNext().focus()
         return("break")
+
+    def resize_image(self, event):
+        new_width = event.width
+        new_height = event.height
+        image = copy_of_image.resize((new_width, new_height))
+        photo = ImageTk.PhotoImage(image)
+        label.config(image = photo)
+        label.image = photo #avoid garbage collection
 
     # start the programs setup screen
     def setup(self):
@@ -76,6 +84,7 @@ class FromJapanNotifier:
     def start_notifier(self):
         self.image_button = Button(self.root)
         self.image_button.place(x=0,y=0)
+        # self.image_button.bind('<Configure>', self.resize_image)
         self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=250, justify="center")
         self.price_label.place(x=0,y=0)
         self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=250, justify="left")
@@ -86,10 +95,12 @@ class FromJapanNotifier:
 
     # sets tkinter labels to given image and price. Image is a button that redirects to passed link 
     def update_item(self, item):
+        
         page=urllib.request.Request(item.img,headers={'User-Agent': 'Mozilla/5.0'}) 
         raw_data=urllib.request.urlopen(page).read()
         PILImage = PIL.Image.open(io.BytesIO(raw_data))
-        PILImage.thumbnail((250, 250))
+        print(self.root.winfo_width())
+        PILImage.resize((999, 999))
         image = ImageTk.PhotoImage(PILImage)
         self.image_button.config(text="temp", image=image, command=lambda: webbrowser.open(item.link))
         self.image_button.image = image
@@ -99,6 +110,7 @@ class FromJapanNotifier:
         
     # reload the page and refresh app frame
     def refresh(self):
+        
         self.driver.get(self.search_url)
         shop_items_xpath = "//div[@class='shop-item flex lg:block lg:w-1/4 mb-6 lg:px-3 justify-center w-full']" # xpath for one item
         try:
