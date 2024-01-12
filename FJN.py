@@ -29,14 +29,6 @@ class FromJapanNotifier:
         event.widget.tk_focusNext().focus()
         return("break")
 
-    def resize_image(self, event):
-        new_width = event.width
-        new_height = event.height
-        image = copy_of_image.resize((new_width, new_height))
-        photo = ImageTk.PhotoImage(image)
-        label.config(image = photo)
-        label.image = photo #avoid garbage collection
-
     # start the programs setup screen
     def setup(self):
 
@@ -93,14 +85,19 @@ class FromJapanNotifier:
         self.refresh()
         self.root.mainloop()
 
+    def get_resized(self, PILImage):
+        w, h = PILImage.size
+        width_ratio = self.root.winfo_width() / w
+        height_ratio = self.root.winfo_height() / h
+        scalar = min(width_ratio, height_ratio)
+        return PILImage.resize((int(w*scalar), int(h*scalar)))
+
     # sets tkinter labels to given image and price. Image is a button that redirects to passed link 
     def update_item(self, item):
-        
         page=urllib.request.Request(item.img,headers={'User-Agent': 'Mozilla/5.0'}) 
         raw_data=urllib.request.urlopen(page).read()
         PILImage = PIL.Image.open(io.BytesIO(raw_data))
-        print(self.root.winfo_width())
-        PILImage.resize((999, 999))
+        PILImage = self.get_resized(PILImage)
         image = ImageTk.PhotoImage(PILImage)
         self.image_button.config(text="temp", image=image, command=lambda: webbrowser.open(item.link))
         self.image_button.image = image
@@ -129,8 +126,7 @@ class FromJapanNotifier:
                 self.prev_items.pop(0)
                 link_xpath = "//a[@class='h-full flex']" 
                 link = item.find_element(By.XPATH, link_xpath).get_attribute('href')
-                self.update_item(Item(desc, img, price, link)) 
-            # print(item.get_attribute('outerHTML'))
+                self.update_item(Item(desc, img, price, link))
             
         except:
             pass
