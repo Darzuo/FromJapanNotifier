@@ -76,12 +76,11 @@ class FromJapanNotifier:
     def start_notifier(self):
         self.image_button = Button(self.root)
         self.image_button.place(x=0,y=0)
-        # self.image_button.bind('<Configure>', self.resize_image)
         self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=250, justify="center")
-        self.price_label.place(x=0,y=0)
+        self.price_label.pack(side=TOP, anchor=NW)
         self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=250, justify="left")
-        self.desc_label.place(x=0, y=250)
-
+        self.desc_label.pack(side=BOTTOM, anchor=SW)
+        
         self.refresh()
         self.root.mainloop()
 
