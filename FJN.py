@@ -17,7 +17,7 @@ class FromJapanNotifier:
     # initialize tkinter window
     def tk_root(self):
         root = Tk()
-        root.resizable(False, False)
+        root.resizable(True, True)
         root.title("FJN")
         root.iconbitmap(default='OneMap.ico')
         root.geometry('250x325')
@@ -76,6 +76,7 @@ class FromJapanNotifier:
     def start_notifier(self):
         self.image_button = Button(self.root)
         self.image_button.place(x=0,y=0)
+        # self.image_button.bind('<Configure>', self.resize_image)
         self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=250, justify="center")
         self.price_label.place(x=0,y=0)
         self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=250, justify="left")
@@ -84,12 +85,19 @@ class FromJapanNotifier:
         self.refresh()
         self.root.mainloop()
 
+    def get_resized(self, PILImage):
+        w, h = PILImage.size
+        width_ratio = self.root.winfo_width() / w
+        height_ratio = self.root.winfo_height() / h
+        scalar = min(width_ratio, height_ratio)
+        return PILImage.resize((int(w*scalar), int(h*scalar)))
+
     # sets tkinter labels to given image and price. Image is a button that redirects to passed link 
     def update_item(self, item):
         page=urllib.request.Request(item.img,headers={'User-Agent': 'Mozilla/5.0'}) 
         raw_data=urllib.request.urlopen(page).read()
         PILImage = PIL.Image.open(io.BytesIO(raw_data))
-        PILImage.thumbnail((250, 250))
+        PILImage = self.get_resized(PILImage)
         image = ImageTk.PhotoImage(PILImage)
         self.image_button.config(text="temp", image=image, command=lambda: webbrowser.open(item.link))
         self.image_button.image = image
@@ -99,6 +107,7 @@ class FromJapanNotifier:
         
     # reload the page and refresh app frame
     def refresh(self):
+        
         self.driver.get(self.search_url)
         shop_items_xpath = "//div[@class='shop-item flex lg:block lg:w-1/4 mb-6 lg:px-3 justify-center w-full']" # xpath for one item
         try:
@@ -117,8 +126,7 @@ class FromJapanNotifier:
                 self.prev_items.pop(0)
                 link_xpath = "//a[@class='h-full flex']" 
                 link = item.find_element(By.XPATH, link_xpath).get_attribute('href')
-                self.update_item(Item(desc, img, price, link)) 
-            # print(item.get_attribute('outerHTML'))
+                self.update_item(Item(desc, img, price, link))
             
         except:
             pass
