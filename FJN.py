@@ -12,7 +12,6 @@ import io
 from pygame import mixer
 from deep_translator import GoogleTranslator
 from Item import Item
-from guppy import hpy
 
 class FromJapanNotifier:
     # initialize tkinter window
@@ -144,7 +143,6 @@ class FromJapanNotifier:
         self.queue = []
         self.root = self.tk_root()
         self.translate = None
-        self.h = hpy()
         # import notification sound
         mixer.init()
         self.notif_sound = mixer.Sound('notification.mp3')
