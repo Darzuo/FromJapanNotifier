@@ -12,6 +12,7 @@ import io
 from pygame import mixer
 from deep_translator import GoogleTranslator
 from Item import Item
+from guppy import hpy
 
 class FromJapanNotifier:
     # initialize tkinter window
@@ -87,6 +88,7 @@ class FromJapanNotifier:
         self.reset_button = Button(self.root, text="R", command=self.refresh)
         self.reset_button.grid(row=0, column=1, sticky=NE)
         
+        self.driver.get(self.search_url)
         self.refresh()
         self.root.mainloop()
 
@@ -113,7 +115,6 @@ class FromJapanNotifier:
     # reload the page and refresh app frame
     def refresh(self):
         
-        self.driver.get(self.search_url)
         shop_items_xpath = "//div[@class='shop-item flex lg:block lg:w-1/4 mb-6 lg:px-3 justify-center w-full']" # xpath for one item
         try:
             elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, shop_items_xpath))) # waits for element to exist, i.e. page to be loaded
@@ -135,7 +136,7 @@ class FromJapanNotifier:
             
         except:
             pass
-        
+        self.driver.refresh()
         self.root.after(1000 * self.refresh_freq, lambda: self.refresh()) # rerun refresh page every 3000 ms
 
     def __init__(self):
@@ -143,10 +144,13 @@ class FromJapanNotifier:
         self.queue = []
         self.root = self.tk_root()
         self.translate = None
+        self.h = hpy()
         # import notification sound
         mixer.init()
         self.notif_sound = mixer.Sound('notification.mp3')
         self.setup()
+
+        self.driver.quit()
         print("done")
 
 FromJapanNotifier()
