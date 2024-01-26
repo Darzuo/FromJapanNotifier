@@ -132,11 +132,10 @@ class FromJapanNotifier:
                 link_xpath = "//a[@class='h-full flex']" 
                 link = item.find_element(By.XPATH, link_xpath).get_attribute('href')
                 self.update_item(Item(desc, img, price, link))
-            
-        except:
-            pass
+        except Exception as e:
+            print(e)
         self.driver.refresh()
-        self.root.after(1000 * self.refresh_freq, lambda: self.refresh()) # rerun refresh page every 3000 ms
+        self.root.after(1000 * self.refresh_freq, lambda: self.refresh()) # rerun refresh page every 'refresh_freq' seconds
 
     def __init__(self):
         self.prev_items = ['','','','',''] # stores the last several prices of items to prevent repetition due to FromJapan inconsistency
