@@ -39,7 +39,10 @@ class FromJapanNotifier:
         def goto_notifier(e=None):
             self.refresh_freq = int(freq_box.get())
             self.search_url = "http://www.fromjapan.co.jp/japan/en/mercari/search/{}/-/?sort_order=new".format(input_box.get().strip().lower().replace(' ', '+'))
-            self.translate = True if var.get() == 1 else False
+            self.translate = True if translate.get() == 1 else False
+            if dark.get() == 1:
+                self.bgc = 'gray13'
+                self.tc =  'ivory2'
             for widget in self.root.winfo_children():
                 widget.destroy()
             self.start_notifier()
@@ -54,10 +57,14 @@ class FromJapanNotifier:
         freq_box = Entry(self.root)
         freq_box.insert(0, "3")
         freq_box.pack()
-        var = IntVar()
-        translate_box = Checkbutton(self.root, text="Translate descriptions?", variable=var, onvalue=1, offvalue=0)
+        translate = IntVar()
+        translate_box = Checkbutton(self.root, text="Translate descriptions?", variable=translate, onvalue=1, offvalue=0)
         translate_box.select()
         translate_box.pack()
+        dark = IntVar()
+        dark_box = Checkbutton(self.root, text="Dark Mode", variable=dark, onvalue=1, offvalue=0)
+        dark_box.select()
+        dark_box.pack()
         start_button = Button(self.root, text="Start!", command=goto_notifier)
         start_button.bind('<Return>',goto_notifier)
         start_button.pack()
@@ -78,11 +85,12 @@ class FromJapanNotifier:
 
     # start the notification screen
     def start_notifier(self):
+        self.root.configure(background=self.bgc)
         self.image_button = Button(self.root)
         self.image_button.place(x=0,y=0)
-        self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=250, justify="center")
+        self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=self.root.winfo_width(), justify="center", bg=self.bgc, fg=self.tc)
         self.price_label.grid(row=0, column=0, sticky=NW)
-        self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=250, justify="left")
+        self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=self.root.winfo_width(), justify="left", bg=self.bgc, fg=self.tc)
         self.desc_label.grid(row=1, column=0, sticky=SW)
         self.reset_button = Button(self.root, text="R", command=self.refresh)
         self.reset_button.grid(row=0, column=1, sticky=NE)
