@@ -51,6 +51,7 @@ class FromJapanNotifier:
         input_text = Label(self.root, text="Enter your search term:")
         input_text.pack()
         input_box = Entry(self.root)
+        input_box.bind('<Return>',goto_notifier)
         input_box.pack()
         freq_text = Label(self.root, text="Refresh frequency (seconds)")
         freq_text.pack()
@@ -85,13 +86,14 @@ class FromJapanNotifier:
 
     # start the notification screen
     def start_notifier(self):
+        self.root.bind("<Configure>", self.on_resize)
         self.root.configure(background=self.bgc)
-        self.image_button = Button(self.root)
-        self.image_button.place(x=0,y=0)
         self.price_label = Label(self.root, text="temp", font=("Arial", 14), wraplength=self.root.winfo_width(), justify="center", bg=self.bgc, fg=self.tc)
         self.price_label.grid(row=0, column=0, sticky=NW)
+        self.image_button = Button(self.root)
+        self.image_button.grid(row=1, column=0, sticky=NW)
         self.desc_label = Label(self.root, text="temp", font=("Arial", 12), wraplength=self.root.winfo_width(), justify="left", bg=self.bgc, fg=self.tc)
-        self.desc_label.grid(row=1, column=0, sticky=SW)
+        self.desc_label.grid(row=2, column=0, sticky=SW)
         self.reset_button = Button(self.root, text="R", command=self.refresh)
         self.reset_button.grid(row=0, column=1, sticky=NE)
         
@@ -99,10 +101,14 @@ class FromJapanNotifier:
         self.refresh()
         self.root.mainloop()
 
+    def on_resize(self, event):
+        self.price_label.config(font=("Arial", max(12, int(self.root.winfo_width()/35))), wraplength=self.root.winfo_width())
+        self.desc_label.config(font=("Arial", max(12, int(self.root.winfo_width()/35))), wraplength=self.root.winfo_width())
+
     def get_resized(self, PILImage):
         w, h = PILImage.size
-        width_ratio = self.root.winfo_width() / w
-        height_ratio = self.root.winfo_height() / h
+        width_ratio = 0.8*self.root.winfo_width() / w
+        height_ratio = 0.8*self.root.winfo_height() / h
         scalar = min(width_ratio, height_ratio)
         return PILImage.resize((int(w*scalar), int(h*scalar)))
 
